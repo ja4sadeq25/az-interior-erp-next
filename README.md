@@ -82,3 +82,5 @@ src/app/(app)/                        dashboard, projects (+ design roadmap / mi
                                       site desk, procurement, inventory, billing, documents, users
 src/app/login                         Supabase email/password sign-in
 ```
+
+# live
