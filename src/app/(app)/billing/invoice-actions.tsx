@@ -2,10 +2,12 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { markSent, recordPayment } from "@/app/actions/billing";
+import { useT } from "@/components/providers";
 import type { Invoice } from "@/lib/types";
 
 export default function InvoiceActions({ invoice }: { invoice: Invoice }) {
   const router = useRouter();
+  const t = useT();
   const [pending, start] = useTransition();
   const [show, setShow] = useState(false);
   const [amount, setAmount] = useState("");
@@ -17,7 +19,7 @@ export default function InvoiceActions({ invoice }: { invoice: Invoice }) {
     setMsg(null);
     start(async () => {
       const res = await recordPayment(invoice.id, amount, method, ref, "");
-      setMsg(res.error ?? "Payment recorded");
+      setMsg(res.error ?? t.billing.paymentOk);
       if (!res.error) { setAmount(""); setShow(false); }
       router.refresh();
     });
@@ -29,12 +31,12 @@ export default function InvoiceActions({ invoice }: { invoice: Invoice }) {
         {invoice.status === "draft" && (
           <button className="btn-ghost px-2 py-1 text-[11px]" disabled={pending}
             onClick={() => start(async () => { await markSent(invoice.id); router.refresh(); })}>
-            Mark Sent
+            {t.billing.markSent}
           </button>
         )}
         {invoice.status !== "paid" && (
           <button className="btn px-2 py-1 text-[11px]" disabled={pending} onClick={() => setShow(!show)}>
-            + Payment
+            {t.billing.addPayment}
           </button>
         )}
       </div>
@@ -42,19 +44,19 @@ export default function InvoiceActions({ invoice }: { invoice: Invoice }) {
         <div className="flex flex-wrap items-center gap-1.5">
           <input className="input w-24 px-2 py-1 text-xs" type="number" min="1" placeholder="৳" value={amount} onChange={(e) => setAmount(e.target.value)} />
           <select className="select px-2 py-1 text-xs" value={method} onChange={(e) => setMethod(e.target.value)}>
-            <option value="bank_transfer">Bank</option>
-            <option value="cheque">Cheque</option>
-            <option value="cash">Cash</option>
-            <option value="bKash/Nagad">bKash/Nagad</option>
-            <option value="online">Online</option>
+            <option value="bank_transfer">{t.billing.methodBank}</option>
+            <option value="cheque">{t.billing.methodCheque}</option>
+            <option value="cash">{t.billing.methodCash}</option>
+            <option value="bKash/Nagad">{t.billing.methodMobile}</option>
+            <option value="online">{t.billing.methodOnline}</option>
           </select>
-          <input className="input w-28 px-2 py-1 text-xs" placeholder="Ref #" value={ref} onChange={(e) => setRef(e.target.value)} />
-          <button className="btn px-2 py-1 text-[11px]" onClick={pay} disabled={pending}>Save</button>
+          <input className="input w-28 px-2 py-1 text-xs" placeholder={t.billing.refPh} value={ref} onChange={(e) => setRef(e.target.value)} />
+          <button className="btn px-2 py-1 text-[11px]" onClick={pay} disabled={pending}>{t.common.save}</button>
         </div>
       )}
-      {msg && <p className="text-[10px] text-neutral-500">{msg}</p>}
+      {msg && <p className="text-[10px] text-neutral-500 dark:text-neutral-400">{msg}</p>}
       {invoice.payment_history.length > 0 && (
-        <p className="text-[10px] text-neutral-400">{invoice.payment_history.length} payment(s) recorded</p>
+        <p className="text-[10px] text-neutral-400 dark:text-neutral-500">{invoice.payment_history.length} {t.billing.paymentsRecorded}</p>
       )}
     </div>
   );

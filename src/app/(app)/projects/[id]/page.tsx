@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/session";
-import { bdt, fmtDate, STATUS_LABEL, statusColor } from "@/lib/format";
+import { getDict } from "@/lib/i18n/server";
+import { bdt, fmtDate, statusColor } from "@/lib/format";
 import type { Deliverable, DesignPhase, Milestone, Project } from "@/lib/types";
 import StatusPanel from "./status-panel";
 import PhaseCard from "./phase-card";
@@ -14,6 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const profile = await requireProfile();
+  const t = await getDict();
   const supabase = await createClient();
 
   const { data } = await supabase.from("projects").select("*").eq("id", id).single();
@@ -42,18 +44,18 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link href="/projects" className="text-xs text-neutral-400 hover:underline">← All projects</Link>
+          <Link href="/projects" className="text-xs text-neutral-400 hover:underline dark:text-neutral-500">{t.projectDetail.back}</Link>
           <div className="mt-1 flex items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
-            <span className={`badge ${statusColor(project.health)}`}>{STATUS_LABEL[project.health]}</span>
+            <span className={`badge ${statusColor(project.health)}`}>{t.status[project.health]}</span>
           </div>
-          <p className="mono mt-1 text-neutral-400">
-            {project.code} · <span className="capitalize">{project.category}</span> · {project.client_name}
+          <p className="mono mt-1 text-neutral-400 dark:text-neutral-500">
+            {project.code} · {t.category[project.category]} · {project.client_name}
           </p>
           {project.origin_consultancy_id && (
-            <p className="mt-1 text-xs text-neutral-500">
-              Converted from consultancy ·{" "}
-              <Link className="underline" href={`/projects/${project.origin_consultancy_id}`}>view design project</Link>
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+              {t.projectDetail.convertedFrom}{" "}
+              <Link className="underline" href={`/projects/${project.origin_consultancy_id}`}>{t.projectDetail.viewDesign}</Link>
             </p>
           )}
         </div>
@@ -62,30 +64,30 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="card p-5">
-          <p className="stat-label">Client</p>
+          <p className="stat-label">{t.projectDetail.client}</p>
           <p className="font-semibold">{project.client_name}</p>
-          <p className="text-xs text-neutral-500">{project.client_phone ?? "—"} · {project.client_email ?? "—"}</p>
-          <p className="mt-2 text-xs text-neutral-500">{project.location ?? "—"}</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">{project.client_phone ?? "—"} · {project.client_email ?? "—"}</p>
+          <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">{project.location ?? "—"}</p>
         </div>
         <div className="card p-5">
-          <p className="stat-label">Timeline</p>
+          <p className="stat-label">{t.projectDetail.timeline}</p>
           <p className="font-semibold">{fmtDate(project.start_date)} → {fmtDate(project.end_date)}</p>
-          <p className="text-xs text-neutral-500">Target: {project.target_weeks ?? "—"} weeks</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.projectDetail.target} {project.target_weeks ?? "—"} {t.projectDetail.weeks}</p>
         </div>
         <div className="card p-5">
           {project.category === "consultancy" ? (
             <>
-              <p className="stat-label">Design Fee</p>
+              <p className="stat-label">{t.projectDetail.designFee}</p>
               <p className="font-semibold">{money ? bdt(project.consultancy_fee) : "••••••"}</p>
-              <p className="text-xs text-neutral-500">Visible to Master / Admin / Finance</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.projectDetail.moneyVisibleTo}</p>
             </>
           ) : (
             <>
-              <p className="stat-label">Contract Value</p>
+              <p className="stat-label">{t.projectDetail.contractValue}</p>
               <p className="font-semibold">{money ? bdt(project.contract_value) : "••••••"}</p>
               {money && (
-                <p className="text-xs text-neutral-500">
-                  Est. {bdt(project.estimated_cost)} · Actual {bdt(project.actual_cost)}
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {t.projectDetail.est} {bdt(project.estimated_cost)} · {t.projectDetail.actual} {bdt(project.actual_cost)}
                 </p>
               )}
             </>
@@ -96,7 +98,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       {project.category === "consultancy" ? (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-500">Design Roadmap · Week {project.current_week}/6</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">{t.projectDetail.designRoadmap} · {t.projectDetail.week} {project.current_week}/6</h2>
           </div>
           {phases.map((ph) => (
             <PhaseCard key={ph.id} phase={ph} deliverables={deliverables.filter((d) => d.phase_id === ph.id)} canManage={manage} />
@@ -105,25 +107,25 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <ConvertPanel projectId={project.id} />
           )}
           {project.has_converted && project.converted_execution_project_id && (
-            <div className="card border-emerald-200 bg-emerald-50 p-5 text-sm">
-              ✅ Design approved & converted to execution.{" "}
+            <div className="card border-emerald-200 bg-emerald-50 p-5 text-sm dark:border-emerald-900 dark:bg-emerald-950/40">
+              {t.projectDetail.convertedBanner}{" "}
               <Link className="font-semibold underline" href={`/projects/${project.converted_execution_project_id}`}>
-                Open execution project →
+                {t.projectDetail.openExecution}
               </Link>
             </div>
           )}
         </section>
       ) : (
         <section className="space-y-3">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-500">Milestones & Billing Schedule</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">{t.projectDetail.milestones}</h2>
           <MilestoneTable milestones={milestones} showMoney={money} canManage={manage || profile.role === "finance"} />
         </section>
       )}
 
       {project.description && (
         <div className="card p-5">
-          <p className="stat-label mb-2">Scope Summary</p>
-          <p className="text-sm text-neutral-700">{project.description}</p>
+          <p className="stat-label mb-2">{t.projectDetail.scope}</p>
+          <p className="text-sm text-neutral-700 dark:text-neutral-300">{project.description}</p>
         </div>
       )}
     </div>
