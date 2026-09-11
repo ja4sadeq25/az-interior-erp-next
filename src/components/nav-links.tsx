@@ -14,10 +14,10 @@ export default function NavLinks({ links, mobile }: { links: { href: string; lab
               key={l.href}
               href={l.href}
               className={`flex flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-semibold ${
-                active ? "text-neutral-900" : "text-neutral-400"
+                active ? "text-neutral-900 dark:text-white" : "text-neutral-400 dark:text-neutral-500"
               }`}
             >
-              <span className={`h-1 w-6 rounded-full ${active ? "bg-neutral-900" : "bg-transparent"}`} />
+              <span className={`h-1 w-6 rounded-full ${active ? "bg-neutral-900 dark:bg-white" : "bg-transparent"}`} />
               {l.label}
             </Link>
           );

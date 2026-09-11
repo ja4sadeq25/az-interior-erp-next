@@ -2,17 +2,19 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateMilestoneStatus } from "@/app/actions/projects";
-import { bdt, fmtDate, STATUS_LABEL, statusColor } from "@/lib/format";
+import { bdt, fmtDate, statusColor } from "@/lib/format";
+import { useT } from "@/components/providers";
 import type { Milestone } from "@/lib/types";
 
 export default function MilestoneTable({ milestones, showMoney, canManage }: {
   milestones: Milestone[]; showMoney: boolean; canManage: boolean;
 }) {
   const router = useRouter();
+  const t = useT();
   const [pending, start] = useTransition();
 
   if (milestones.length === 0) {
-    return <div className="card p-8 text-center text-sm text-neutral-500">No milestones yet.</div>;
+    return <div className="card p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">{t.projectDetail.noMilestones}</div>;
   }
 
   function setStatus(id: string, status: string) {
@@ -22,21 +24,21 @@ export default function MilestoneTable({ milestones, showMoney, canManage }: {
   return (
     <div className="table-wrap">
       <table className="w-full min-w-[700px]">
-        <thead className="border-b border-neutral-200 bg-neutral-50">
+        <thead className="table-head">
           <tr>
-            <th className="th">Milestone</th>
-            <th className="th">Due</th>
-            <th className="th">Bill %</th>
-            <th className="th">Bill Amount</th>
-            <th className="th">Status</th>
+            <th className="th">{t.projectDetail.msMilestone}</th>
+            <th className="th">{t.projectDetail.msDue}</th>
+            <th className="th">{t.projectDetail.msBillPct}</th>
+            <th className="th">{t.projectDetail.msBillAmount}</th>
+            <th className="th">{t.projectDetail.msStatus}</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-neutral-100">
+        <tbody className="table-body">
           {milestones.map((m) => (
             <tr key={m.id}>
               <td className="td">
                 <p className="font-semibold">{m.title}</p>
-                <p className="text-xs text-neutral-400">{m.phase} · {m.deliverables.join(", ")}</p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">{m.phase} · {m.deliverables.join(", ")}</p>
               </td>
               <td className="td text-xs">{fmtDate(m.due_date)}</td>
               <td className="td mono">{Number(m.bill_pct)}%</td>
@@ -50,11 +52,11 @@ export default function MilestoneTable({ milestones, showMoney, canManage }: {
                     onChange={(e) => setStatus(m.id, e.target.value)}
                   >
                     {["pending", "in_progress", "completed", "client_approved"].map((s) => (
-                      <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+                      <option key={s} value={s}>{t.status[s]}</option>
                     ))}
                   </select>
                 ) : (
-                  <span className={`badge ${statusColor(m.status)}`}>{STATUS_LABEL[m.status]}</span>
+                  <span className={`badge ${statusColor(m.status)}`}>{t.status[m.status]}</span>
                 )}
               </td>
             </tr>

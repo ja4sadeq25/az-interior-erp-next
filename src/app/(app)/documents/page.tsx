@@ -1,23 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/session";
-import { fmtDate, STATUS_LABEL, statusColor } from "@/lib/format";
+import { getDict } from "@/lib/i18n/server";
+import { fmtDate, statusColor } from "@/lib/format";
 import type { SecureDocument } from "@/lib/types";
 import UploadForm from "./upload-form";
 import DocStatusSelect from "./doc-status";
 
 export const dynamic = "force-dynamic";
 
-const CATEGORY_LABEL: Record<string, string> = {
-  blueprint: "Blueprint / Drawings",
-  "3d_render": "3D Renders",
-  structural_cad: "Structural / MEP CAD",
-  vendor_contract: "Vendor Contracts",
-  client_agreement: "Client Agreements",
-  compliance_noc: "Compliance / NOC",
-};
-
 export default async function DocumentsPage() {
   const profile = await requireProfile();
+  const t = await getDict();
   const canUpload = ["master", "admin", "project_manager", "site_engineer"].includes(profile.role);
   const canManage = ["master", "admin", "project_manager"].includes(profile.role);
   const supabase = await createClient();
@@ -32,37 +25,37 @@ export default async function DocumentsPage() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="mono text-neutral-400">Secure DMS</p>
-          <h1 className="text-2xl font-bold tracking-tight">Blueprints & Contracts</h1>
-          <p className="text-sm text-neutral-500">{docs.length} documents · role-gated access</p>
+          <p className="mono text-neutral-400 dark:text-neutral-500">{t.documents.kicker}</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t.documents.heading}</h1>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">{docs.length} {t.documents.docs} · {t.documents.roleGated}</p>
         </div>
         {canUpload && <UploadForm projects={projects} />}
       </header>
 
       {docs.length === 0 ? (
-        <div className="card p-12 text-center text-sm text-neutral-500">No documents uploaded yet.</div>
+        <div className="card p-12 text-center text-sm text-neutral-500 dark:text-neutral-400">{t.documents.noDocs}</div>
       ) : (
         <div className="table-wrap">
           <table className="w-full min-w-[820px]">
-            <thead className="border-b border-neutral-200 bg-neutral-50">
+            <thead className="table-head">
               <tr>
-                <th className="th">Document</th>
-                <th className="th">Category</th>
-                <th className="th">Project</th>
-                <th className="th">Type / Size</th>
-                <th className="th">Version</th>
-                <th className="th">Uploaded</th>
-                <th className="th">Status</th>
+                <th className="th">{t.documents.thDocument}</th>
+                <th className="th">{t.documents.thCategory}</th>
+                <th className="th">{t.documents.thProject}</th>
+                <th className="th">{t.documents.thType}</th>
+                <th className="th">{t.documents.thVersion}</th>
+                <th className="th">{t.documents.thUploaded}</th>
+                <th className="th">{t.documents.thStatus}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="table-body">
               {docs.map((d) => (
                 <tr key={d.id}>
                   <td className="td">
                     <p className="font-semibold">{d.title}</p>
-                    {d.description && <p className="text-xs text-neutral-400">{d.description}</p>}
+                    {d.description && <p className="text-xs text-neutral-400 dark:text-neutral-500">{d.description}</p>}
                   </td>
-                  <td className="td text-xs">{CATEGORY_LABEL[d.category] ?? d.category}</td>
+                  <td className="td text-xs">{t.documents.categories[d.category] ?? d.category}</td>
                   <td className="td text-xs">{d.projects?.title ?? "—"}</td>
                   <td className="td mono">{d.file_type} · {d.file_size}</td>
                   <td className="td mono">{d.version}</td>
@@ -71,7 +64,7 @@ export default async function DocumentsPage() {
                     {canManage ? (
                       <DocStatusSelect id={d.id} status={d.status} />
                     ) : (
-                      <span className={`badge ${statusColor(d.status)}`}>{STATUS_LABEL[d.status]}</span>
+                      <span className={`badge ${statusColor(d.status)}`}>{t.status[d.status]}</span>
                     )}
                   </td>
                 </tr>
