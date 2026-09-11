@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #171717;
+  --color-paper: #fafafa;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+html { color-scheme: light; }
+body { background: var(--color-paper); color: var(--color-ink); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-neutral-200 bg-white shadow-sm;
+  }
+  .label {
+    @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500;
+  }
+  .input, .select, .textarea {
+    @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-neutral-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 disabled:opacity-50;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold;
+  }
+  .mono {
+    @apply font-mono text-[11px] uppercase tracking-wider;
+  }
+  .table-wrap { @apply overflow-x-auto rounded-xl border border-neutral-200 bg-white; }
+  .th { @apply px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-500; }
+  .td { @apply px-4 py-3 text-sm text-neutral-800; }
+  .stat-label { @apply font-mono text-[11px] uppercase tracking-wider text-neutral-400; }
+  .stat-value { @apply text-2xl font-bold tracking-tight text-neutral-900; }
+}
