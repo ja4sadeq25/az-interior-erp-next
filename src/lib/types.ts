@@ -174,7 +174,7 @@ export interface Invoice {
   total_amount: number;
   paid_amount: number;
   status: InvoiceStatus;
-  payment_history: { date: string; amount: number; method: string; referenceNumber: string; note?: string }[];
+  payment_history: { date: string; amount: number; method: string; referenceNumber: string; note?: string; receipt?: string }[];
   projects?: { title: string; code: string | null } | null;
 }
 
