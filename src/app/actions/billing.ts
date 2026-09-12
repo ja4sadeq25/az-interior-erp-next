@@ -72,7 +72,7 @@ export async function markSent(id: string) {
   return { ok: true };
 }
 
-export async function recordPayment(invoiceId: string, amount: string, method: string, ref: string, note: string, paidOn?: string) {
+export async function recordPayment(invoiceId: string, amount: string, method: string, ref: string, note: string, paidOn?: string, receipt?: File | null) {
   let profile;
   try { profile = await canBill(); } catch (e) { return { error: (e as Error).message }; }
   const amt = Number(amount);
@@ -81,15 +81,26 @@ export async function recordPayment(invoiceId: string, amount: string, method: s
   const { data: inv } = await supabase.from("invoices").select("invoice_number, client_name").eq("id", invoiceId).single();
   const today = new Date().toISOString().slice(0, 10);
   const on = paidOn && paidOn <= today ? paidOn : today;
+
+  // Optional money-receipt image / PDF, kept in the private photos bucket.
+  let receiptPath: string | null = null;
+  if (receipt && receipt.size > 0) {
+    if (receipt.size > 10 * 1024 * 1024) return { error: "Receipt is larger than 10 MB." };
+    const safe = receipt.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    receiptPath = `receipts/${invoiceId}/${crypto.randomUUID()}-${safe}`;
+    const { error: upErr } = await supabase.storage.from("photos")
+      .upload(receiptPath, receipt, { contentType: receipt.type });
+    if (upErr) return { error: upErr.message };
+  }
   const { error } = await supabase.rpc("record_payment", {
-    invoice_id: invoiceId, amount: amt, method, ref: ref || "", note: note || null, paid_on: on,
+    invoice_id: invoiceId, amount: amt, method, ref: ref || "", note: note || null, paid_on: on, receipt_path: receiptPath,
   });
   if (error) return { error: error.message };
   await logActivity({
     actor: profile, action: "payment.recorded", entity: "payment", entityId: invoiceId,
     entityLabel: `${inv?.invoice_number ?? "INV"} · ${inv?.client_name ?? ""}`,
     summary: `payment ${bdt(amt)} via ${method} on ${on}${ref ? ` · ref ${ref}` : ""}`,
-    metadata: { amount: amt, method, ref, paid_on: on, invoice_id: invoiceId },
+    metadata: { amount: amt, method, ref, paid_on: on, receipt: receiptPath, invoice_id: invoiceId },
   });
   revalidatePath("/billing");
   return { ok: true };

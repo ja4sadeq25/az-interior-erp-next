@@ -359,6 +359,7 @@ const en = {
     issueQty: "Issue qty",
   },
   billing: {
+    receipt: "Receipt",
     del: "Delete",
     delConfirm: "Delete permanently",
     paidOn: "Payment date",
@@ -865,6 +866,7 @@ const bn: Dict = {
     issueQty: "ইস্যুর পরিমাণ",
   },
   billing: {
+    receipt: "রসিদ",
     del: "মুছুন",
     delConfirm: "স্থায়ীভাবে মুছুন",
     paidOn: "পেমেন্টের তারিখ",
