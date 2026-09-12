@@ -1,6 +1,6 @@
 # AZ Interior ERP
 
-Enterprise ERP for **AZ Architects** — consultancy design roadmaps, turnkey execution projects, procurement & vendors, material inventory, client billing with automated profit visibility, secure document management, daily site logs & snags, and role-based staff logins with a Master Account.
+Enterprise ERP for **AZ Architects** — consultancy design roadmaps, turnkey execution projects, procurement & vendors, material inventory, client billing with automated profit visibility, secure document management, daily site logs & snags, role-based staff logins with a Master Account, and an append-only audit log of key actions (Master/Admin only).
 
 Built on the same production stack as **Luxerior Ops**: Next.js (App Router) · Supabase (Postgres, Auth, Storage, RLS) · Tailwind v4 · Vercel.
 
@@ -25,6 +25,8 @@ The **first user created becomes master** automatically (trigger in `0001_schema
 
 1. Create a project at [supabase.com](https://supabase.com) (region: Singapore). Save the database password.
 2. SQL Editor → paste **`supabase/migrations/0001_schema.sql`** → Run. (Creates all tables, enums, role helpers, RLS policies, triggers, and the `documents` / `photos` storage buckets.)
+   Then run **`0002_architect_role.sql`** (architect role) and **`0003_audit_log.sql`** (audit trail) the same way — on a fresh project you can run all three in order.
+   Note: `0002` contains an intentional `commit;` right after `ALTER TYPE … ADD VALUE` — Postgres requires new enum values to be committed before they are used.
 3. Authentication → Providers → Email: keep enabled; **turn off “Confirm email”** (staff accounts are created by the Master, not self-signup).
 4. Authentication → Users → **Add user** → your email + password (tick “auto confirm”). This first user becomes master.
 5. Project Settings → API: copy **Project URL**, **anon public** key, **service_role** key.
@@ -79,8 +81,9 @@ supabase/migrations/0001_schema.sql   schema, enums, RLS, triggers:
 src/proxy.ts                          auth redirect middleware
 src/lib/supabase/                     browser / server / service-role clients
 src/lib/session.ts                    requireProfile (role guard)
+src/lib/audit.ts                      logActivity — best-effort audit-trail writer (service role)
 src/app/(app)/                        dashboard, projects (+ design roadmap / milestones),
-                                      site desk, procurement, inventory, billing, documents, users
+                                      site desk, procurement, inventory, billing, documents, users, audit log
 src/app/login                         Supabase email/password sign-in
 ```
 

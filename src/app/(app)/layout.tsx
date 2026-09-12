@@ -7,7 +7,7 @@ import NavLinks from "@/components/nav-links";
 import { PrefsGroup } from "@/components/prefs";
 import type { Role } from "@/lib/types";
 
-const NAV: { href: string; key: "dashboard" | "projects" | "site" | "procurement" | "inventory" | "billing" | "documents" | "users"; roles: Role[] }[] = [
+const NAV: { href: string; key: "dashboard" | "projects" | "site" | "procurement" | "inventory" | "billing" | "documents" | "users" | "audit"; roles: Role[] }[] = [
   { href: "/", key: "dashboard", roles: ["master", "admin", "architect", "project_manager", "site_engineer", "procurement", "finance"] },
   { href: "/projects", key: "projects", roles: ["master", "admin", "architect", "project_manager", "site_engineer", "procurement", "finance", "client"] },
   { href: "/site", key: "site", roles: ["master", "admin", "architect", "project_manager", "site_engineer"] },
@@ -16,6 +16,7 @@ const NAV: { href: string; key: "dashboard" | "projects" | "site" | "procurement
   { href: "/billing", key: "billing", roles: ["master", "admin", "finance"] },
   { href: "/documents", key: "documents", roles: ["master", "admin", "architect", "project_manager", "site_engineer", "procurement", "finance"] },
   { href: "/users", key: "users", roles: ["master"] },
+  { href: "/audit", key: "audit", roles: ["master", "admin"] },
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {

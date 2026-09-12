@@ -16,6 +16,13 @@ export function fmtDate(d: string | null | undefined): string {
   return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+export function fmtDateTime(d: string | null | undefined): string {
+  if (!d) return "—";
+  return new Date(d).toLocaleString("en-GB", {
+    day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+  });
+}
+
 // Status pill colors for light + dark mode. Labels live in the i18n dictionaries (t.status).
 export function statusColor(s: string): string {
   const map: Record<string, string> = {

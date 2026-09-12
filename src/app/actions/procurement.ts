@@ -2,6 +2,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/session";
+import { logActivity } from "@/lib/audit";
+import { bdt } from "@/lib/format";
 
 async function canProcure() {
   const p = await requireProfile();
@@ -19,7 +21,7 @@ export async function createPo(f: {
   if (!items.length) return { error: "Add at least one line item." };
   const total = items.reduce((s, i) => s + Number(i.total || 0), 0);
   const supabase = await createClient();
-  const { error } = await supabase.from("purchase_orders").insert({
+  const { data, error } = await supabase.from("purchase_orders").insert({
     project_id: f.project_id || null,
     vendor_id: f.vendor_id || null,
     items,
@@ -27,19 +29,33 @@ export async function createPo(f: {
     expected_delivery: f.expected_delivery || null,
     notes: f.notes || null,
     approved_by: profile.name,
-  });
+  }).select("id, po_number").single();
   if (error) return { error: error.message };
+  await logActivity({
+    actor: profile, action: "po.created", entity: "purchase_order", entityId: data.id,
+    entityLabel: data.po_number ?? "PO",
+    summary: `purchase order raised · total ${bdt(total)}`,
+    metadata: { total, project_id: f.project_id || null, vendor_id: f.vendor_id || null },
+  });
   revalidatePath("/procurement");
   return { ok: true };
 }
 
 export async function updatePoStatus(id: string, status: string) {
-  try { await canProcure(); } catch (e) { return { error: (e as Error).message }; }
+  let profile;
+  try { profile = await canProcure(); } catch (e) { return { error: (e as Error).message }; }
   const supabase = await createClient();
+  const { data: po } = await supabase.from("purchase_orders").select("po_number").eq("id", id).single();
   const patch: Record<string, unknown> = { status };
   if (status === "delivered") patch.delivered_date = new Date().toISOString().slice(0, 10);
   const { error } = await supabase.from("purchase_orders").update(patch).eq("id", id);
   if (error) return { error: error.message };
+  await logActivity({
+    actor: profile, action: "po.status_changed", entity: "purchase_order", entityId: id,
+    entityLabel: po?.po_number ?? id,
+    summary: `status → ${status}`,
+    metadata: { status },
+  });
   revalidatePath("/procurement");
   return { ok: true };
 }

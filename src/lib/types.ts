@@ -22,6 +22,20 @@ export interface Profile {
   created_at: string;
 }
 
+export interface ActivityLog {
+  id: string;
+  actor_id: string | null;
+  actor_name: string;
+  actor_role: Role | null;
+  action: string;
+  entity: string;
+  entity_id: string | null;
+  entity_label: string | null;
+  summary: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
 export type ProjectCategory = "consultancy" | "execution";
 export type ProjectStatus = "design" | "procurement" | "execution" | "finishing" | "handover" | "completed";
 export type ProjectHealth = "on_track" | "at_risk" | "delayed";

@@ -2,6 +2,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/session";
+import { logActivity } from "@/lib/audit";
+import { bdt } from "@/lib/format";
 
 async function canManage() {
   const p = await requireProfile();
@@ -38,22 +40,37 @@ export async function createProject(f: {
     estimated_cost: isExec && money && f.estimated_cost ? Number(f.estimated_cost) : null,
     description: f.description || null,
     created_by: profile.id,
-  }).select("id").single();
+  }).select("id, code").single();
   if (error) return { error: error.message };
   if (isExec && money && f.contract_value) {
     await supabase.rpc("seed_execution_milestones", { pid: data.id, cv: Number(f.contract_value) });
   }
+  await logActivity({
+    actor: profile, action: "project.created", entity: "project", entityId: data.id,
+    entityLabel: `${data.code ?? "—"} · ${f.title.trim()}`,
+    summary: `${f.category} project created for ${f.client_name.trim()}`,
+    metadata: { category: f.category, ptype: f.ptype },
+  });
   revalidatePath("/projects");
   return { ok: true, id: data.id };
 }
 
 export async function updateProjectStatus(id: string, status: string, health: string, progress: string) {
-  try { await canManage(); } catch (e) { return { error: (e as Error).message }; }
+  let profile;
+  try { profile = await canManage(); } catch (e) { return { error: (e as Error).message }; }
   const supabase = await createClient();
+  const { data: p } = await supabase.from("projects").select("code, title").eq("id", id).single();
+  const pct = Math.max(0, Math.min(100, Number(progress) || 0));
   const { error } = await supabase.from("projects").update({
-    status, health, progress_pct: Math.max(0, Math.min(100, Number(progress) || 0)),
+    status, health, progress_pct: pct,
   }).eq("id", id);
   if (error) return { error: error.message };
+  await logActivity({
+    actor: profile, action: "project.status_changed", entity: "project", entityId: id,
+    entityLabel: `${p?.code ?? "—"} · ${p?.title ?? id}`,
+    summary: `status → ${status} · health → ${health} · progress ${pct}%`,
+    metadata: { status, health, progress: pct },
+  });
   revalidatePath(`/projects/${id}`);
   revalidatePath("/projects");
   return { ok: true };
@@ -108,6 +125,13 @@ export async function convertToExecution(consultancyId: string, contractValue: s
     consultancy_id: consultancyId, cv, sd: startDate || null, ed: endDate || null,
   });
   if (error) return { error: error.message };
+  const { data: np } = await supabase.from("projects").select("code, title").eq("id", data as string).single();
+  await logActivity({
+    actor: p, action: "project.converted", entity: "project", entityId: data as string,
+    entityLabel: `${np?.code ?? "—"} · ${np?.title ?? ""}`,
+    summary: `consultancy converted to turnkey execution · contract value ${bdt(cv)}`,
+    metadata: { contract_value: cv },
+  });
   revalidatePath("/projects");
   return { ok: true, id: data as string };
 }
