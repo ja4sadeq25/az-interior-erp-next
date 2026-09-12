@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
 
-type Deliverable = { name: string; completed: boolean; file_url: string | null };
+type TFile = { path: string; name: string; mime: string | null; caption: string | null; at: string };
+type GFile = TFile & { phase_number: number | null; phase_title: string | null };
+type Deliverable = { name: string; completed: boolean; files: TFile[] };
 type Phase = {
   phase_number: number; title: string; week_timeline: string; description: string | null;
   status: string; approved_by_client: boolean; client_approved_at: string | null;
@@ -16,7 +18,7 @@ type Data = {
   category: string; status: string; health: string; progress_pct: number;
   current_week: number | null; target_weeks: number | null;
   start_date: string | null; end_date: string | null; company_name: string;
-  phases: Phase[]; milestones: Milestone[];
+  phases: Phase[]; milestones: Milestone[]; gallery: GFile[]; urls: Record<string, string>;
 };
 
 const L = {
@@ -30,6 +32,7 @@ const L = {
     roadmap: "Design roadmap", payments: "Payment schedule", due: "Due", completed: "Completed",
     noPhases: "The design roadmap has not been set up yet.", noMs: "No payment schedule recorded yet.",
     approved: "Approved by you", amount: "Amount", notSet: "Not set",
+    gallery: "Work gallery", noFiles: "No files shared yet.", openFile: "Open file",
     pstatus: { design: "Design", procurement: "Procurement", execution: "Execution", finishing: "Finishing", handover: "Handover", completed: "Completed" } as Record<string, string>,
     health: { on_track: "On track", at_risk: "At risk", delayed: "Delayed" } as Record<string, string>,
     phstatus: { not_started: "Not started", in_progress: "In progress", client_review: "Awaiting your review", revision_requested: "Revision requested", approved: "Approved" } as Record<string, string>,
@@ -45,6 +48,7 @@ const L = {
     roadmap: "ডিজাইন রোডম্যাপ", payments: "পেমেন্ট সূচি", due: "তারিখ", completed: "সম্পন্ন",
     noPhases: "ডিজাইন রোডম্যাপ এখনো সাজানো হয়নি।", noMs: "পেমেন্ট সূচি এখনো যোগ করা হয়নি।",
     approved: "আপনি অনুমোদন দিয়েছেন", amount: "পরিমাণ", notSet: "নির্ধারিত হয়নি",
+    gallery: "কাজের গ্যালারি", noFiles: "এখনো কোনো ফাইল দেওয়া হয়নি।", openFile: "ফাইল খুলুন",
     pstatus: { design: "ডিজাইন", procurement: "ক্রয়", execution: "নির্মাণ", finishing: "ফিনিশিং", handover: "হস্তান্তর", completed: "সম্পন্ন" } as Record<string, string>,
     health: { on_track: "ঠিক পথে", at_risk: "ঝুঁকিতে", delayed: "বিলম্বিত" } as Record<string, string>,
     phstatus: { not_started: "শুরু হয়নি", in_progress: "চলছে", client_review: "আপনার মতামতের অপেক্ষায়", revision_requested: "সংশোধন চাওয়া হয়েছে", approved: "অনুমোদিত" } as Record<string, string>,
@@ -74,6 +78,21 @@ function imgUrls(raw: unknown[]): string[] {
   return raw
     .map((x) => (typeof x === "string" ? x : x && typeof x === "object" && "url" in x ? String((x as { url: unknown }).url) : ""))
     .filter((u) => u.startsWith("http"));
+}
+
+function FileThumb({ f, url, label }: { f: TFile; url?: string; label: string }) {
+  const isImg = (f.mime ?? "").startsWith("image/");
+  return (
+    <a href={url} target="_blank" rel="noreferrer" title={f.caption ?? f.name} aria-label={label}
+      className="block h-14 w-14 overflow-hidden rounded-md border border-neutral-200 bg-neutral-50">
+      {isImg && url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={url} alt={f.caption ?? f.name} loading="lazy" className="h-full w-full object-cover" />
+      ) : (
+        <span className="flex h-full w-full items-center justify-center font-mono text-[10px] text-neutral-400">PDF</span>
+      )}
+    </a>
+  );
 }
 
 export default function TrackClient({ initialCode }: { initialCode: string }) {
@@ -220,9 +239,18 @@ export default function TrackClient({ initialCode }: { initialCode: string }) {
                     {ph.deliverables.length > 0 && (
                       <ul className="mt-4 space-y-1.5">
                         {ph.deliverables.map((d, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm">
+                          <li key={i} className="text-sm">
+                            <div className="flex items-start gap-2">
                             <span className={d.completed ? "text-emerald-600" : "text-neutral-300"}>{d.completed ? "✓" : "○"}</span>
                             <span className={d.completed ? "text-neutral-400 line-through" : "text-neutral-700"}>{d.name}</span>
+                            </div>
+                            {d.files?.length > 0 && (
+                              <div className="mt-1.5 ml-5 flex flex-wrap gap-1.5">
+                                {d.files.map((f, k) => (
+                                  <FileThumb key={k} f={f} url={data.urls?.[f.path]} label={t.openFile} />
+                                ))}
+                              </div>
+                            )}
                           </li>
                         ))}
                       </ul>
@@ -248,6 +276,38 @@ export default function TrackClient({ initialCode }: { initialCode: string }) {
               })}
             </div>
           </section>
+
+          {data.gallery?.length > 0 && (
+            <section>
+              <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-neutral-500">
+                {t.gallery} · {data.gallery.length}
+              </h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {data.gallery.map((f, i) => {
+                  const url = data.urls?.[f.path];
+                  const isImg = (f.mime ?? "").startsWith("image/");
+                  return (
+                    <a key={i} href={url} target="_blank" rel="noreferrer" className="card overflow-hidden transition hover:shadow-md">
+                      <div className="aspect-[4/3] bg-neutral-100">
+                        {isImg && url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={url} alt={f.caption ?? f.name} loading="lazy" className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="flex h-full w-full items-center justify-center text-2xl text-neutral-400">PDF</span>
+                        )}
+                      </div>
+                      <div className="p-2.5">
+                        <p className="truncate text-xs font-semibold">{f.caption || f.name}</p>
+                        <p className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-wider text-neutral-400">
+                          {f.phase_number ? `P${f.phase_number} · ` : ""}{dt(f.at, lang)}
+                        </p>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           <section>
             <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-neutral-500">{t.payments}</h2>

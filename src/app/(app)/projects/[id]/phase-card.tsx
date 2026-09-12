@@ -5,12 +5,14 @@ import { Check, CheckCircle2, Circle } from "lucide-react";
 import { updatePhaseStatus, toggleDeliverable, approvePhase } from "@/app/actions/projects";
 import { statusColor } from "@/lib/format";
 import { useT } from "@/components/providers";
-import type { Deliverable, DesignPhase } from "@/lib/types";
+import DeliverableFiles from "./deliverable-files";
+import type { Deliverable, DeliverableFile, DesignPhase } from "@/lib/types";
 
 const PHASE_STATUSES = ["not_started", "in_progress", "client_review", "revision_requested", "approved"];
 
-export default function PhaseCard({ phase, deliverables, canManage }: {
-  phase: DesignPhase; deliverables: Deliverable[]; canManage: boolean;
+export default function PhaseCard({ phase, deliverables, files, urls, canManage, canDelete, projectId }: {
+  phase: DesignPhase; deliverables: Deliverable[]; files: DeliverableFile[];
+  urls: Record<string, string>; canManage: boolean; canDelete: boolean; projectId: string;
 }) {
   const router = useRouter();
   const t = useT();
@@ -58,7 +60,8 @@ export default function PhaseCard({ phase, deliverables, canManage }: {
       {deliverables.length > 0 && (
         <ul className="mt-3 space-y-1.5">
           {deliverables.map((d) => (
-            <li key={d.id} className="flex items-start gap-2 text-sm">
+            <li key={d.id} className="text-sm">
+              <div className="flex items-start gap-2">
               {canManage && phase.status !== "approved" ? (
                 <button onClick={() => toggle(d)} className="mt-0.5 text-neutral-400 hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-white">
                   {d.completed ? <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> : <Circle className="h-4 w-4" />}
@@ -69,6 +72,17 @@ export default function PhaseCard({ phase, deliverables, canManage }: {
                 <Circle className="mt-0.5 h-4 w-4 text-neutral-300 dark:text-neutral-600" />
               )}
               <span className={d.completed ? "text-neutral-400 line-through dark:text-neutral-500" : "text-neutral-700 dark:text-neutral-300"}>{d.name}</span>
+              </div>
+              <DeliverableFiles
+                projectId={projectId}
+                phaseId={phase.id}
+                deliverableId={d.id}
+                files={files.filter((f) => f.deliverable_id === d.id)}
+                urls={urls}
+                canManage={canManage}
+                canDelete={canDelete}
+                locked={phase.status === "approved"}
+              />
             </li>
           ))}
         </ul>
