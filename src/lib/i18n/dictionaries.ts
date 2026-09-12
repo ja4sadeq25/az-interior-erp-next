@@ -6,6 +6,21 @@ export const LOCALE_COOKIE = "az-locale";
 export const THEME_COOKIE = "az-theme";
 
 const en = {
+  files: {
+    attach: "Attach proof",
+    upload: "Upload",
+    uploading: "Uploading…",
+    cancel: "Cancel",
+    pickFile: "Choose a file first.",
+    captionPh: "Caption (optional) — e.g. Living room render, final",
+    showToClient: "Show this file to the client",
+    show: "Show",
+    hide: "Hide",
+    shown: "Visible to client",
+    hidden: "Internal only",
+    gallery: "Progress Gallery",
+    onlyClientVisible: "Only client-visible",
+  },
   brandTag: "Enterprise ERP",
   signOut: "Sign out",
   toggleThemeTitle: "Dark / light mode",
@@ -495,6 +510,21 @@ const en = {
 export type Dict = typeof en;
 
 const bn: Dict = {
+  files: {
+    attach: "প্রমাণ যোগ করুন",
+    upload: "আপলোড",
+    uploading: "আপলোড হচ্ছে…",
+    cancel: "বাতিল",
+    pickFile: "আগে একটি ফাইল বাছুন।",
+    captionPh: "ক্যাপশন (ঐচ্ছিক) — যেমন লিভিং রুম রেন্ডার, চূড়ান্ত",
+    showToClient: "ক্লায়েন্টকে এই ফাইলটি দেখান",
+    show: "দেখান",
+    hide: "লুকান",
+    shown: "ক্লায়েন্ট দেখতে পাবেন",
+    hidden: "শুধু অভ্যন্তরীণ",
+    gallery: "কাজের গ্যালারি",
+    onlyClientVisible: "শুধু ক্লায়েন্ট-দৃশ্যমান",
+  },
   brandTag: "এন্টারপ্রাইজ ইআরপি",
   signOut: "সাইন আউট",
   toggleThemeTitle: "ডার্ক / লাইট মোড",

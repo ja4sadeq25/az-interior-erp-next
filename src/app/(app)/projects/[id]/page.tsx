@@ -4,11 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/session";
 import { getDict } from "@/lib/i18n/server";
 import { bdt, fmtDate, statusColor } from "@/lib/format";
-import type { Deliverable, DesignPhase, Milestone, Project } from "@/lib/types";
+import type { Deliverable, DeliverableFile, DesignPhase, Milestone, Project } from "@/lib/types";
 import StatusPanel from "./status-panel";
 import PhaseCard from "./phase-card";
 import MilestoneTable from "./milestone-table";
 import ConvertPanel from "./convert-panel";
+import ProjectGallery from "./gallery";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,17 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   if (phases.length) {
     const { data: d } = await supabase.from("deliverables").select("*").in("phase_id", phases.map((p) => p.id));
     deliverables = (d ?? []) as Deliverable[];
+  }
+
+  // Proof files + short-lived signed URLs (the 'photos' bucket is private).
+  const { data: fileRows } = await supabase
+    .from("deliverable_files").select("*").eq("project_id", id).order("created_at", { ascending: false });
+  const files = (fileRows ?? []) as DeliverableFile[];
+  const urls: Record<string, string> = {};
+  if (files.length) {
+    const paths = files.map((f) => f.storage_path);
+    const { data: signed } = await supabase.storage.from("photos").createSignedUrls(paths, 3600);
+    signed?.forEach((sg, i) => { if (sg.signedUrl) urls[paths[i]] = sg.signedUrl; });
   }
 
   return (
@@ -103,7 +115,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">{t.projectDetail.designRoadmap} · {t.projectDetail.week} {project.current_week}/6</h2>
           </div>
           {phases.map((ph) => (
-            <PhaseCard key={ph.id} phase={ph} deliverables={deliverables.filter((d) => d.phase_id === ph.id)} canManage={manage} />
+            <PhaseCard
+              key={ph.id}
+              phase={ph}
+              deliverables={deliverables.filter((d) => d.phase_id === ph.id)}
+              files={files.filter((f) => f.phase_id === ph.id)}
+              urls={urls}
+              canManage={manage}
+              canDelete={profile.role === "master" || profile.role === "admin"}
+              projectId={project.id}
+            />
           ))}
           {!project.has_converted && phases.some((p) => p.status === "approved") && canConvert && (
             <ConvertPanel projectId={project.id} />
@@ -123,6 +144,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <MilestoneTable milestones={milestones} showMoney={money} canManage={manage || profile.role === "finance"} />
         </section>
       )}
+
+      <ProjectGallery files={files} urls={urls} phases={phases} />
 
       {project.description && (
         <div className="card p-5">

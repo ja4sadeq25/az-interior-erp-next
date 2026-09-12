@@ -221,3 +221,18 @@ export interface Snag {
   resolved_date: string | null;
   projects?: { title: string; code: string | null } | null;
 }
+
+export interface DeliverableFile {
+  id: string;
+  project_id: string;
+  phase_id: string | null;
+  deliverable_id: string | null;
+  storage_path: string;
+  file_name: string;
+  mime: string | null;
+  size_bytes: number | null;
+  caption: string | null;
+  client_visible: boolean;
+  uploaded_by: string | null;
+  created_at: string;
+}
