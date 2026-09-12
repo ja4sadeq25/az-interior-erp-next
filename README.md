@@ -10,7 +10,8 @@ Built on the same production stack as **Luxerior Ops**: Next.js (App Router) · 
 |---|---|
 | master | everything — users, settings, all modules, all money |
 | admin | all modules and money |
-| project_manager | projects, design roadmap, milestones, documents, site desk — no billing |
+| architect | projects, design roadmap, milestones, documents, site desk — money fields masked, no conversion/billing |
+| project_manager | projects, design roadmap, milestones, documents, site desk, convert to execution — no billing |
 | site_engineer | daily site logs, snags, stock issue — no money |
 | procurement | vendors, purchase orders, inventory |
 | finance | billing/invoices, payments, project money columns |

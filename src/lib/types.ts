@@ -1,6 +1,7 @@
 export type Role =
   | "master"
   | "admin"
+  | "architect"
   | "project_manager"
   | "site_engineer"
   | "procurement"

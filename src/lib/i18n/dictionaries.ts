@@ -22,6 +22,7 @@ const en = {
   roles: {
     master: "Master Account",
     admin: "Admin",
+    architect: "Architect",
     project_manager: "Project Manager",
     site_engineer: "Site Engineer",
     procurement: "Procurement",
@@ -473,6 +474,7 @@ const bn: Dict = {
   roles: {
     master: "মাস্টার অ্যাকাউন্ট",
     admin: "অ্যাডমিন",
+    architect: "স্থপতি",
     project_manager: "প্রজেক্ট ম্যানেজার",
     site_engineer: "সাইট ইঞ্জিনিয়ার",
     procurement: "প্রকিউরমেন্ট",

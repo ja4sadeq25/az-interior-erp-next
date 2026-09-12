@@ -39,7 +39,7 @@ export async function uploadDocument(f: {
 
 export async function updateDocStatus(id: string, status: string) {
   const p = await requireProfile();
-  if (!["master", "admin", "project_manager"].includes(p.role)) return { error: "unauthorized" };
+  if (!["master", "admin", "architect", "project_manager"].includes(p.role)) return { error: "unauthorized" };
   const supabase = await createClient();
   const { error } = await supabase.from("documents").update({ status }).eq("id", id);
   if (error) return { error: error.message };

@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
 export default async function DocumentsPage() {
   const profile = await requireProfile();
   const t = await getDict();
-  const canUpload = ["master", "admin", "project_manager", "site_engineer"].includes(profile.role);
-  const canManage = ["master", "admin", "project_manager"].includes(profile.role);
+  const canUpload = ["master", "admin", "architect", "project_manager", "site_engineer"].includes(profile.role);
+  const canManage = ["master", "admin", "architect", "project_manager"].includes(profile.role);
   const supabase = await createClient();
   const [docRes, projRes] = await Promise.all([
     supabase.from("documents").select("*, projects(title, code)").order("created_at", { ascending: false }),

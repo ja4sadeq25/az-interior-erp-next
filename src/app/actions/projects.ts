@@ -5,7 +5,7 @@ import { requireProfile } from "@/lib/session";
 
 async function canManage() {
   const p = await requireProfile();
-  if (!["master", "admin", "project_manager"].includes(p.role)) throw new Error("unauthorized");
+  if (!["master", "admin", "architect", "project_manager"].includes(p.role)) throw new Error("unauthorized");
   return p;
 }
 
@@ -19,6 +19,8 @@ export async function createProject(f: {
   if (!f.title.trim() || !f.client_name.trim()) return { error: "Title and client name are required." };
   const supabase = await createClient();
   const isExec = f.category === "execution";
+  // Architect manages projects but never enters financial fields (money stays masked for the role).
+  const money = ["master", "admin", "project_manager", "finance"].includes(profile.role);
   const { data, error } = await supabase.from("projects").insert({
     title: f.title.trim(),
     client_name: f.client_name.trim(),
@@ -31,14 +33,14 @@ export async function createProject(f: {
     start_date: f.start_date || null,
     end_date: f.end_date || null,
     target_weeks: f.target_weeks ? Number(f.target_weeks) : null,
-    consultancy_fee: !isExec && f.consultancy_fee ? Number(f.consultancy_fee) : null,
-    contract_value: isExec && f.contract_value ? Number(f.contract_value) : null,
-    estimated_cost: isExec && f.estimated_cost ? Number(f.estimated_cost) : null,
+    consultancy_fee: !isExec && money && f.consultancy_fee ? Number(f.consultancy_fee) : null,
+    contract_value: isExec && money && f.contract_value ? Number(f.contract_value) : null,
+    estimated_cost: isExec && money && f.estimated_cost ? Number(f.estimated_cost) : null,
     description: f.description || null,
     created_by: profile.id,
   }).select("id").single();
   if (error) return { error: error.message };
-  if (isExec && f.contract_value) {
+  if (isExec && money && f.contract_value) {
     await supabase.rpc("seed_execution_milestones", { pid: data.id, cv: Number(f.contract_value) });
   }
   revalidatePath("/projects");
@@ -86,7 +88,7 @@ export async function approvePhase(phaseId: string, feedback: string) {
 
 export async function updateMilestoneStatus(id: string, status: string) {
   const p = await requireProfile();
-  if (!["master", "admin", "project_manager", "finance"].includes(p.role)) return { error: "unauthorized" };
+  if (!["master", "admin", "architect", "project_manager", "finance"].includes(p.role)) return { error: "unauthorized" };
   const supabase = await createClient();
   const patch: Record<string, unknown> = { status };
   if (status === "completed" || status === "client_approved") patch.completed_date = new Date().toISOString().slice(0, 10);
@@ -96,7 +98,9 @@ export async function updateMilestoneStatus(id: string, status: string) {
 }
 
 export async function convertToExecution(consultancyId: string, contractValue: string, startDate: string, endDate: string) {
-  try { await canManage(); } catch (e) { return { error: (e as Error).message }; }
+  // Conversion sets the contract value — a money decision, so the architect role is excluded.
+  const p = await requireProfile();
+  if (!["master", "admin", "project_manager"].includes(p.role)) return { error: "unauthorized" };
   const cv = Number(contractValue);
   if (!cv || cv <= 0) return { error: "Enter a valid contract value." };
   const supabase = await createClient();
