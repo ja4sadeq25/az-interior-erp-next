@@ -17,7 +17,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   if (q) query = query.or(`title.ilike.%${q}%,client_name.ilike.%${q}%,code.ilike.%${q}%`);
   const { data } = await query;
   const list = (data ?? []) as Project[];
-  const canCreate = ["master", "admin", "project_manager"].includes(profile.role);
+  const canCreate = ["master", "admin", "architect", "project_manager"].includes(profile.role);
 
   const tabs = [
     { key: "", label: t.projects.tabAll },

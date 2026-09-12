@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function SitePage() {
   const profile = await requireProfile();
   const t = await getDict();
-  const canWrite = ["master", "admin", "project_manager", "site_engineer"].includes(profile.role);
+  const canWrite = ["master", "admin", "architect", "project_manager", "site_engineer"].includes(profile.role);
   const supabase = await createClient();
   const [logRes, snagRes, projRes] = await Promise.all([
     supabase.from("daily_logs").select("*, projects(title, code)").order("log_date", { ascending: false }).limit(30),

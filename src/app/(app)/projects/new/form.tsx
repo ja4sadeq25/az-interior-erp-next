@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { createProject } from "@/app/actions/projects";
 import { useT } from "@/components/providers";
 
-export default function ProjectForm() {
+export default function ProjectForm({ canEnterMoney = true }: { canEnterMoney?: boolean }) {
   const router = useRouter();
   const t = useT();
   const [pending, start] = useTransition();
@@ -89,11 +89,13 @@ export default function ProjectForm() {
       </div>
 
       {category === "consultancy" ? (
-        <div>
-          <label className="label">{t.newProject.fee}</label>
-          <input name="consultancy_fee" className="input" type="number" min="0" placeholder="350000" />
-        </div>
-      ) : (
+        canEnterMoney ? (
+          <div>
+            <label className="label">{t.newProject.fee}</label>
+            <input name="consultancy_fee" className="input" type="number" min="0" placeholder="350000" />
+          </div>
+        ) : null
+      ) : canEnterMoney ? (
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label">{t.newProject.contractValue}</label>
@@ -104,7 +106,7 @@ export default function ProjectForm() {
             <input name="estimated_cost" className="input" type="number" min="0" placeholder="6800000" />
           </div>
         </div>
-      )}
+      ) : null}
 
       <div>
         <label className="label">{t.newProject.description}</label>

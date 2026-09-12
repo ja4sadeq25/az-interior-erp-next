@@ -22,8 +22,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   if (!data) notFound();
   const project = data as Project;
 
-  const manage = ["master", "admin", "project_manager"].includes(profile.role);
+  const manage = ["master", "admin", "architect", "project_manager"].includes(profile.role);
   const money = ["master", "admin", "finance"].includes(profile.role);
+  // Conversion sets the contract value — a money decision, so the architect role is excluded.
+  const canConvert = ["master", "admin", "project_manager"].includes(profile.role);
 
   const [phasesRes, msRes] = await Promise.all([
     project.category === "consultancy"
@@ -103,7 +105,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           {phases.map((ph) => (
             <PhaseCard key={ph.id} phase={ph} deliverables={deliverables.filter((d) => d.phase_id === ph.id)} canManage={manage} />
           ))}
-          {!project.has_converted && phases.some((p) => p.status === "approved") && manage && (
+          {!project.has_converted && phases.some((p) => p.status === "approved") && canConvert && (
             <ConvertPanel projectId={project.id} />
           )}
           {project.has_converted && project.converted_execution_project_id && (

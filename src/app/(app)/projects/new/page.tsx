@@ -5,8 +5,9 @@ import ProjectForm from "./form";
 
 export default async function NewProjectPage() {
   const profile = await requireProfile();
-  if (!["master", "admin", "project_manager"].includes(profile.role)) redirect("/projects");
+  if (!["master", "admin", "architect", "project_manager"].includes(profile.role)) redirect("/projects");
   const t = await getDict();
+  const canEnterMoney = ["master", "admin", "project_manager"].includes(profile.role);
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <header>
@@ -16,7 +17,7 @@ export default async function NewProjectPage() {
           {t.newProject.desc}
         </p>
       </header>
-      <ProjectForm />
+      <ProjectForm canEnterMoney={canEnterMoney} />
     </div>
   );
 }

@@ -78,7 +78,7 @@ export default async function DashboardPage() {
         {list.length === 0 ? (
           <div className="card p-10 text-center text-sm text-neutral-500 dark:text-neutral-400">
             {t.dashboard.noProjects}{" "}
-            {["master", "admin", "project_manager"].includes(profile.role) && (
+            {["master", "admin", "architect", "project_manager"].includes(profile.role) && (
               <Link href="/projects/new" className="font-semibold underline">{t.dashboard.createFirst}</Link>
             )}
           </div>

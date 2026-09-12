@@ -7,15 +7,16 @@ import NavLinks from "@/components/nav-links";
 import { PrefsGroup } from "@/components/prefs";
 import type { Role } from "@/lib/types";
 
-const NAV: { href: string; key: "dashboard" | "projects" | "site" | "procurement" | "inventory" | "billing" | "documents" | "users"; roles: Role[] }[] = [
-  { href: "/", key: "dashboard", roles: ["master", "admin", "project_manager", "site_engineer", "procurement", "finance"] },
-  { href: "/projects", key: "projects", roles: ["master", "admin", "project_manager", "site_engineer", "procurement", "finance", "client"] },
-  { href: "/site", key: "site", roles: ["master", "admin", "project_manager", "site_engineer"] },
-  { href: "/procurement", key: "procurement", roles: ["master", "admin", "procurement", "project_manager", "finance"] },
-  { href: "/inventory", key: "inventory", roles: ["master", "admin", "procurement", "project_manager", "site_engineer"] },
+const NAV: { href: string; key: "dashboard" | "projects" | "site" | "procurement" | "inventory" | "billing" | "documents" | "users" | "audit"; roles: Role[] }[] = [
+  { href: "/", key: "dashboard", roles: ["master", "admin", "architect", "project_manager", "site_engineer", "procurement", "finance"] },
+  { href: "/projects", key: "projects", roles: ["master", "admin", "architect", "project_manager", "site_engineer", "procurement", "finance", "client"] },
+  { href: "/site", key: "site", roles: ["master", "admin", "architect", "project_manager", "site_engineer"] },
+  { href: "/procurement", key: "procurement", roles: ["master", "admin", "architect", "procurement", "project_manager", "finance"] },
+  { href: "/inventory", key: "inventory", roles: ["master", "admin", "architect", "procurement", "project_manager", "site_engineer"] },
   { href: "/billing", key: "billing", roles: ["master", "admin", "finance"] },
-  { href: "/documents", key: "documents", roles: ["master", "admin", "project_manager", "site_engineer", "procurement", "finance"] },
+  { href: "/documents", key: "documents", roles: ["master", "admin", "architect", "project_manager", "site_engineer", "procurement", "finance"] },
   { href: "/users", key: "users", roles: ["master"] },
+  { href: "/audit", key: "audit", roles: ["master", "admin"] },
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {

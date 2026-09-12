@@ -1,6 +1,7 @@
 export type Role =
   | "master"
   | "admin"
+  | "architect"
   | "project_manager"
   | "site_engineer"
   | "procurement"
@@ -18,6 +19,20 @@ export interface Profile {
   role: Role;
   active: boolean;
   client_project_id: string | null;
+  created_at: string;
+}
+
+export interface ActivityLog {
+  id: string;
+  actor_id: string | null;
+  actor_name: string;
+  actor_role: Role | null;
+  action: string;
+  entity: string;
+  entity_id: string | null;
+  entity_label: string | null;
+  summary: string;
+  metadata: Record<string, unknown>;
   created_at: string;
 }
 
