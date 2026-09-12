@@ -68,7 +68,7 @@ export default async function BillingPage() {
                   <td className="td font-semibold">{bdt(inv.total_amount)}</td>
                   <td className="td text-emerald-700 dark:text-emerald-400">{bdt(inv.paid_amount)}</td>
                   <td className="td"><span className={`badge ${statusColor(inv.status)}`}>{t.status[inv.status]}</span></td>
-                  <td className="td"><InvoiceActions invoice={inv} /></td>
+                  <td className="td"><InvoiceActions invoice={inv} isMaster={profile.role === "master"} /></td>
                 </tr>
               ))}
             </tbody>
