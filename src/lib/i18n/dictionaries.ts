@@ -359,6 +359,9 @@ const en = {
     issueQty: "Issue qty",
   },
   billing: {
+    del: "Delete",
+    delConfirm: "Delete permanently",
+    paidOn: "Payment date",
     kicker: "Finance Command",
     heading: "Client Billing & Invoices",
     billed: "Billed",
@@ -862,6 +865,9 @@ const bn: Dict = {
     issueQty: "ইস্যুর পরিমাণ",
   },
   billing: {
+    del: "মুছুন",
+    delConfirm: "স্থায়ীভাবে মুছুন",
+    paidOn: "পেমেন্টের তারিখ",
     kicker: "ফাইন্যান্স কমান্ড",
     heading: "ক্লায়েন্ট বিলিং ও ইনভয়েস",
     billed: "বিল হয়েছে",

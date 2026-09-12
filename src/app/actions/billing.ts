@@ -72,23 +72,44 @@ export async function markSent(id: string) {
   return { ok: true };
 }
 
-export async function recordPayment(invoiceId: string, amount: string, method: string, ref: string, note: string) {
+export async function recordPayment(invoiceId: string, amount: string, method: string, ref: string, note: string, paidOn?: string) {
   let profile;
   try { profile = await canBill(); } catch (e) { return { error: (e as Error).message }; }
   const amt = Number(amount);
   if (!amt || amt <= 0) return { error: "Enter a valid amount." };
   const supabase = await createClient();
   const { data: inv } = await supabase.from("invoices").select("invoice_number, client_name").eq("id", invoiceId).single();
+  const today = new Date().toISOString().slice(0, 10);
+  const on = paidOn && paidOn <= today ? paidOn : today;
   const { error } = await supabase.rpc("record_payment", {
-    invoice_id: invoiceId, amount: amt, method, ref: ref || "", note: note || null,
+    invoice_id: invoiceId, amount: amt, method, ref: ref || "", note: note || null, paid_on: on,
   });
   if (error) return { error: error.message };
   await logActivity({
     actor: profile, action: "payment.recorded", entity: "payment", entityId: invoiceId,
     entityLabel: `${inv?.invoice_number ?? "INV"} · ${inv?.client_name ?? ""}`,
-    summary: `payment ${bdt(amt)} via ${method}${ref ? ` · ref ${ref}` : ""}`,
-    metadata: { amount: amt, method, ref, invoice_id: invoiceId },
+    summary: `payment ${bdt(amt)} via ${method} on ${on}${ref ? ` · ref ${ref}` : ""}`,
+    metadata: { amount: amt, method, ref, paid_on: on, invoice_id: invoiceId },
   });
+  revalidatePath("/billing");
+  return { ok: true };
+}
+
+/** Master-only hard delete. The row is logged before it goes, so the trail survives. */
+export async function deleteInvoice(id: string) {
+  const profile = await requireProfile();
+  if (profile.role !== "master") return { error: "Only the Master account can delete an invoice." };
+  const supabase = await createClient();
+  const { data: inv } = await supabase.from("invoices")
+    .select("invoice_number, client_name, total_amount, paid_amount").eq("id", id).single();
+  await logActivity({
+    actor: profile, action: "invoice.deleted", entity: "invoice", entityId: id,
+    entityLabel: `${inv?.invoice_number ?? "INV"} · ${inv?.client_name ?? ""}`,
+    summary: `invoice deleted · total ${bdt(inv?.total_amount ?? 0)} · paid ${bdt(inv?.paid_amount ?? 0)}`,
+    metadata: { invoice: inv ?? null },
+  });
+  const { error } = await supabase.rpc("master_delete", { p_table: "invoices", p_id: id });
+  if (error) return { error: error.message };
   revalidatePath("/billing");
   return { ok: true };
 }

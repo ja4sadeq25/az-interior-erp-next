@@ -1,11 +1,11 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { markSent, recordPayment } from "@/app/actions/billing";
+import { markSent, recordPayment, deleteInvoice } from "@/app/actions/billing";
 import { useT } from "@/components/providers";
 import type { Invoice } from "@/lib/types";
 
-export default function InvoiceActions({ invoice }: { invoice: Invoice }) {
+export default function InvoiceActions({ invoice, isMaster }: { invoice: Invoice; isMaster: boolean }) {
   const router = useRouter();
   const t = useT();
   const [pending, start] = useTransition();
@@ -13,14 +13,17 @@ export default function InvoiceActions({ invoice }: { invoice: Invoice }) {
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("bank_transfer");
   const [ref, setRef] = useState("");
+  const today = new Date().toISOString().slice(0, 10);
+  const [paidOn, setPaidOn] = useState(today);
+  const [confirmDel, setConfirmDel] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   function pay() {
     setMsg(null);
     start(async () => {
-      const res = await recordPayment(invoice.id, amount, method, ref, "");
+      const res = await recordPayment(invoice.id, amount, method, ref, "", paidOn);
       setMsg(res.error ?? t.billing.paymentOk);
-      if (!res.error) { setAmount(""); setShow(false); }
+      if (!res.error) { setAmount(""); setPaidOn(today); setShow(false); }
       router.refresh();
     });
   }
@@ -39,6 +42,28 @@ export default function InvoiceActions({ invoice }: { invoice: Invoice }) {
             {t.billing.addPayment}
           </button>
         )}
+        {isMaster && !confirmDel && (
+          <button className="btn-ghost px-2 py-1 text-[11px] text-rose-600 dark:text-rose-400"
+            disabled={pending} onClick={() => setConfirmDel(true)}>
+            {t.billing.del}
+          </button>
+        )}
+        {isMaster && confirmDel && (
+          <>
+            <button className="px-2 py-1 text-[11px] font-semibold rounded-lg bg-rose-600 text-white disabled:opacity-50"
+              disabled={pending}
+              onClick={() => start(async () => {
+                const r = await deleteInvoice(invoice.id);
+                if (r?.error) { setMsg(r.error); setConfirmDel(false); }
+                router.refresh();
+              })}>
+              {t.billing.delConfirm}
+            </button>
+            <button className="btn-ghost px-2 py-1 text-[11px]" disabled={pending} onClick={() => setConfirmDel(false)}>
+              {t.common.cancel}
+            </button>
+          </>
+        )}
       </div>
       {show && (
         <div className="flex flex-wrap items-center gap-1.5">
@@ -51,6 +76,8 @@ export default function InvoiceActions({ invoice }: { invoice: Invoice }) {
             <option value="online">{t.billing.methodOnline}</option>
           </select>
           <input className="input w-28 px-2 py-1 text-xs" placeholder={t.billing.refPh} value={ref} onChange={(e) => setRef(e.target.value)} />
+          <input className="input w-36 px-2 py-1 text-xs" type="date" max={today} title={t.billing.paidOn}
+            value={paidOn} onChange={(e) => setPaidOn(e.target.value)} />
           <button className="btn px-2 py-1 text-[11px]" onClick={pay} disabled={pending}>{t.common.save}</button>
         </div>
       )}
