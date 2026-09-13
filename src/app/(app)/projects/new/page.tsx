@@ -5,7 +5,7 @@ import ProjectForm from "./form";
 
 export default async function NewProjectPage() {
   const profile = await requireProfile();
-  if (!["master", "admin", "architect", "project_manager"].includes(profile.role)) redirect("/projects");
+  if (!["master", "admin", "architect", "3d_artist", "project_manager"].includes(profile.role)) redirect("/projects");
   const t = await getDict();
   const canEnterMoney = ["master", "admin", "project_manager"].includes(profile.role);
   return (

@@ -7,7 +7,7 @@ import { bdt } from "@/lib/format";
 
 async function canManage() {
   const p = await requireProfile();
-  if (!["master", "admin", "architect", "project_manager"].includes(p.role)) throw new Error("unauthorized");
+  if (!["master", "admin", "architect", "3d_artist", "project_manager"].includes(p.role)) throw new Error("unauthorized");
   return p;
 }
 
@@ -105,7 +105,7 @@ export async function approvePhase(phaseId: string, feedback: string) {
 
 export async function updateMilestoneStatus(id: string, status: string) {
   const p = await requireProfile();
-  if (!["master", "admin", "architect", "project_manager", "finance"].includes(p.role)) return { error: "unauthorized" };
+  if (!["master", "admin", "architect", "3d_artist", "project_manager", "finance"].includes(p.role)) return { error: "unauthorized" };
   const supabase = await createClient();
   const patch: Record<string, unknown> = { status };
   if (status === "completed" || status === "client_approved") patch.completed_date = new Date().toISOString().slice(0, 10);

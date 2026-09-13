@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/session";
 import { logActivity } from "@/lib/audit";
 
-const UPLOADERS = ["master", "admin", "architect", "project_manager", "site_engineer"];
+const UPLOADERS = ["master", "admin", "architect", "3d_artist", "project_manager", "site_engineer"];
 const MAX_BYTES = 15 * 1024 * 1024;
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf"];
 

@@ -2,6 +2,7 @@ export type Role =
   | "master"
   | "admin"
   | "architect"
+  | "3d_artist"
   | "project_manager"
   | "site_engineer"
   | "procurement"

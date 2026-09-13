@@ -6,7 +6,7 @@ import { logActivity } from "@/lib/audit";
 
 async function canUpload() {
   const p = await requireProfile();
-  if (!["master", "admin", "architect", "project_manager", "site_engineer"].includes(p.role)) throw new Error("unauthorized");
+  if (!["master", "admin", "architect", "3d_artist", "project_manager", "site_engineer"].includes(p.role)) throw new Error("unauthorized");
   return p;
 }
 
@@ -47,7 +47,7 @@ export async function uploadDocument(f: {
 
 export async function updateDocStatus(id: string, status: string) {
   const p = await requireProfile();
-  if (!["master", "admin", "architect", "project_manager"].includes(p.role)) return { error: "unauthorized" };
+  if (!["master", "admin", "architect", "3d_artist", "project_manager"].includes(p.role)) return { error: "unauthorized" };
   const supabase = await createClient();
   const { data: d } = await supabase.from("documents").select("title").eq("id", id).single();
   const { error } = await supabase.from("documents").update({ status }).eq("id", id);
