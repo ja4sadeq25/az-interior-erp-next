@@ -23,7 +23,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   if (!data) notFound();
   const project = data as Project;
 
-  const manage = ["master", "admin", "architect", "project_manager"].includes(profile.role);
+  const manage = ["master", "admin", "architect", "3d_artist", "project_manager"].includes(profile.role);
   const money = ["master", "admin", "finance"].includes(profile.role);
   // Conversion sets the contract value — a money decision, so the architect role is excluded.
   const canConvert = ["master", "admin", "project_manager"].includes(profile.role);

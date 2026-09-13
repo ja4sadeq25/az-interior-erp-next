@@ -49,7 +49,7 @@ export default function UserRow({ user, isSelf, roleLabel, joined, projects }: {
           <span className="badge border-neutral-900 bg-neutral-950 text-white dark:border-white dark:bg-white dark:text-neutral-950">{roleLabel}</span>
         ) : (
           <select className="select py-1.5 text-xs" value={user.role} disabled={pending} onChange={(e) => changeRole(e.target.value)}>
-            {["admin", "architect", "project_manager", "site_engineer", "procurement", "finance", "client"].map((r) => (
+            {["admin", "architect", "3d_artist", "project_manager", "site_engineer", "procurement", "finance", "client"].map((r) => (
               <option key={r} value={r}>{t.roles[r]}</option>
             ))}
           </select>

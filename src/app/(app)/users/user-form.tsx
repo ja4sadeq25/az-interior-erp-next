@@ -43,6 +43,7 @@ export default function UserForm({ projects }: { projects: { id: string; code: s
           <select name="role" className="input" value={role} onChange={(e) => setRole(e.target.value)}>
             <option value="admin">{t.roles.admin}</option>
             <option value="architect">{t.roles.architect}</option>
+            <option value="3d_artist">{t.roles["3d_artist"]}</option>
             <option value="project_manager">{t.roles.project_manager}</option>
             <option value="site_engineer">{t.roles.site_engineer}</option>
             <option value="procurement">{t.roles.procurement}</option>

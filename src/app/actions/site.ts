@@ -5,7 +5,7 @@ import { requireProfile } from "@/lib/session";
 
 async function canLog() {
   const p = await requireProfile();
-  if (!["master", "admin", "architect", "project_manager", "site_engineer"].includes(p.role)) throw new Error("unauthorized");
+  if (!["master", "admin", "architect", "3d_artist", "project_manager", "site_engineer"].includes(p.role)) throw new Error("unauthorized");
   return p;
 }
 
